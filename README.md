@@ -2,7 +2,7 @@
 
 A modified version of [WebSaver][WebSaver]: A Mac screen saver that shows a single webpage.
 
-ScratchSaver allows you to use a Scratch project as a screen saver… if you've ever wanted to do that. Paste the "embed" URL (https://scratch.mit.edu/projects/&lt;projectid>/embed) into the WebSaver preferences window within in System Preferences; ScratchSaver auto-clicks the green flag button after a short delay when the project page loads.
+ScratchSaver allows you to use a Scratch project as a screen saver… if you've ever wanted to do that. Paste the "embed" URL (`https://scratch.mit.edu/projects/<projectid>/embed`) into the WebSaver preferences window within in System Preferences; ScratchSaver auto-clicks the green flag button after a short delay when the project page loads.
 
 Builds in Xcode. Output is ScratchSaver.saver, which Finder sees as a screensaver file.
 
