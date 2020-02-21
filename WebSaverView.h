@@ -24,7 +24,7 @@
 
 
 
-@interface WebSaverView : ScreenSaverView 
+@interface WebSaverView : ScreenSaverView <WKNavigationDelegate>
 {
     WKWebView *webView;
 	NSDate *lastLoad;
@@ -54,7 +54,3 @@
 }
 @end
 
-        
-@interface WebView (WebKitStuffThatShouldBeAPI)
-    - (void)setDrawsBackground:(BOOL)drawsBackground;
-@end

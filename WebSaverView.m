@@ -31,44 +31,40 @@ static NSString * upArrow, *downArrow, *leftArrow, *rightArrow;
 
 @implementation WebSaverView
 
-- (void)webView:(WebView *)sender didStartProvisionalLoadForFrame:(WebFrame *)frame
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation
 {
-	DebugLog(@"webView:didStartProvisionalLoadForFrame: %@", frame);
+    DebugLog(@"webView:didStartProvisionalNavigation: %@", navigation);
 }
 
-- (void)webView:(WebView *)sender didCommitLoadForFrame:(WebFrame *)frame
+- (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation
 {
-	DebugLog(@"webView:didCommitLoadForFrame");
+    DebugLog(@"webView:didCommitNavigation: %@", navigation);
 }
 
-- (void)webView:(WebView *)sender didFailLoadWithError:(NSError *)error forFrame:(WebFrame *)frame
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error
 {
-	DebugLog(@"webView:didFailLoadWithError: %@", error);
+    DebugLog(@"webView:didFailNavigation: %@ withError: %@", navigation, error);
 }
 
-- (void)webView:(WebView *)sender didFailProvisionalLoadWithError:(NSError *)error forFrame:(WebFrame *)frame
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error
 {
-	DebugLog(@"webView:didFailProvisionalLoadWithError: %@", error);
+    DebugLog(@"webView:didFailProvisionalNavigation: %@ withError: %@", navigation, error);
 }
 
-- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation
 {
-	DebugLog(@"webView:didFinishLoadForFrame");
+    DebugLog(@"webView:didFinishNavigation: %@", navigation);
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [webView evaluateJavaScript:[NSString stringWithContentsOfURL:[[NSBundle bundleForClass:[self class]] URLForResource:@"click_green_flag" withExtension:@"js"] encoding:NSUTF8StringEncoding error:NULL] completionHandler:^(id _Nullable result, NSError *_Nullable error) {
+            DebugLog(@"Evaluated JavaScript, error: %@", error);
+        }];
+    });
 }
 
-- (void)webView:(WebView *)sender didReceiveIcon:(NSImage *)image forFrame:(WebFrame *)frame
+- (void)webView:(WKWebView *)webView didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation
 {
-	DebugLog(@"webView:didReceiveIcon");
-}
-
-- (void)webView:(WebView *)sender serverRedirectedForDataSource:(WebFrame *)frame
-{
-	DebugLog(@"webView:serverRedirectedForDataSource");
-}
-
-- (void)webView:(WebView *)sender didReceiveTitle:(NSString *)title forFrame:(WebFrame *)frame
-{
-	NSLog(@"webView:didReceiveTitle: %@", title);
+    DebugLog(@"webView:didReceiveServerRedirectForProvisionalNavigation: %@", navigation);
 }
 
 
@@ -120,15 +116,13 @@ static NSString * upArrow, *downArrow, *leftArrow, *rightArrow;
 		DebugLog(@"Will use MultiMonitor: %d", enableMultiMonitorBool);
         
 		webView = [[WKWebView alloc] initWithFrame:frame];
-		[webView setDrawsBackground:NO];
-        [webView setCustomUserAgent:@"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8) AppleWebKit/536.25 (KHTML, like Gecko) Version/6.0 Safari/536.25"];
         
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wundeclared-selector"
-        WebPreferences *preferences = [webView preferences];
-        if([preferences respondsToSelector:@selector(setWebGLEnabled:)]){
-            [preferences performSelector:@selector(setWebGLEnabled:) withObject:[NSNumber numberWithBool:YES]];
-        }
+//        WKPreferences *preferences = [WKPreferences new];
+//        if([preferences respondsToSelector:@selector(setWebGLEnabled:)]){
+//            [preferences performSelector:@selector(setWebGLEnabled:) withObject:[NSNumber numberWithBool:YES]];
+//        }
         #pragma clang diagnostic pop
 
 
@@ -136,7 +130,7 @@ static NSString * upArrow, *downArrow, *leftArrow, *rightArrow;
 			[self scaleUnitSquareToSize:NSMakeSize( 0.25, 0.25 )];
 		}
 
-		[webView setFrameLoadDelegate:self];
+        [webView setNavigationDelegate:self];
 		
 		[self addSubview:webView];
 	}
@@ -202,7 +196,7 @@ static NSString * upArrow, *downArrow, *leftArrow, *rightArrow;
 {
 	DebugLog(@"webView:stopAnimation");
 	
-    [[webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"about:"]]];
+    [webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"about:"]]];
 
     [super stopAnimation];
 }
@@ -251,7 +245,7 @@ static NSString * upArrow, *downArrow, *leftArrow, *rightArrow;
 	if (enableReloadBool) {
 		// DebugLog(@"time %f", [lastLoad timeIntervalSinceNow]);
 		if (reloadTimeFloat + [lastLoad timeIntervalSinceNow] < 0) {
-			[[webView mainFrame] reload];
+			[webView reload];
 			lastLoad = [[NSDate alloc] init];
 			DebugLog(@"reloaded %@",[lastLoad description]);
 		}
@@ -384,7 +378,7 @@ static NSString * upArrow, *downArrow, *leftArrow, *rightArrow;
     //TODO - add this to menu
     //[request setHTTPMethod:@"POST"];
     
-    [[webView mainFrame] loadRequest:request];
+    [webView loadRequest:request];
     lastLoad = [[NSDate alloc] init];
     DebugLog(@"reloaded %@",[lastLoad description]);
     
